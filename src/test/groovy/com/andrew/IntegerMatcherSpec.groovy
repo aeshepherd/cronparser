@@ -6,7 +6,7 @@ import spock.lang.Specification
 class IntegerMatcherSpec extends Specification {
 
 
-    def testConstructor() {
+    def testConstructorSuccess() {
         setup:
         def matcher = new IntegerMatcher('test', 0, 5)
 
@@ -15,6 +15,24 @@ class IntegerMatcherSpec extends Specification {
         matcher.max == 5
         matcher.name == 'test'
     }
+
+    def testConstructorFail() {
+
+        when:
+            def matcher = new IntegerMatcher(name, min, max)
+
+        then:
+            def e   = thrown(exceptionClass)
+            e.message   == exceptionMessage
+
+        where:
+        name|min|max|exceptionClass|exceptionMessage
+        'test' | 5 | 0 | IntegerMatcherException.class| 'Max (0) is less than min (5)'
+        'test' | 0 | 'andrew' | NumberFormatException.class | 'For input string: "andrew"'
+//        'test' | 'fred' | 5 | NumberFormatException.class | 'Invalid number'
+//        'test' | -1 | 5 | IntegerMatcherException.class | 'Out of range'
+    }
+
 
     def testMatchCreation(){
         setup:
@@ -42,15 +60,29 @@ class IntegerMatcherSpec extends Specification {
             matcher.parseText(text)
 
         then:
-            thrown(IntegerMatcherException)
+            IntegerMatcherException e   = thrown()
+            e.message   == exceptionMessage
 
         where:
         text | exceptionMessage
-        '10' || 'Value out of range: 10'
-        '100' || 'Value out of range: 100'
-        '6' || 'Value out of range: 9'
-        'a' || 'Unexpected text'
-        '-3' || 'Unexpected text'
-        '0' || 'Value out of range: 0'
+        '10' || 'Value out of range: 10. Range [1, 5]'
+        '100' || 'Number too big: 100'
+        '6' || 'Value out of range: 6. Range [1, 5]'
+        'a' || 'Unmatched text "a"'
+        '-3' || 'Unmatched text "-3"'
+        '0' || 'Value out of range: 0. Range [1, 5]'
     }
+
+    def testMatchFailSpecifc(){
+        setup:
+        def matcher = new IntegerMatcher('test', 1, 5)
+
+        when:
+            matcher.parseText('10')
+
+        then:
+            IntegerMatcherException e   = thrown()
+            e.message   == 'Value out of range: 10. Range [1, 5]'
+    }
+
 }

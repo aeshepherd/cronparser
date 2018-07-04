@@ -1,7 +1,7 @@
 package com.andrew
 
 class IntegerMatcherException extends Exception{
-//    IntegerMatcherException(msg) {
-//        super(msg)
-//    }
+    IntegerMatcherException(msg) {
+        super(msg)
+    }
 }
